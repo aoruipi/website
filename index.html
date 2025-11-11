@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Interactive Portfolio — Orbit Animation</title>
+<style>
+  html,body{
+    height:100%;
+    margin:0;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+    /* Force cursor everywhere, even beyond content bounds */
+    cursor:url('assets/cursor.png') 16 16, auto !important;
+  }
+
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background-image:url('assets/background.png');
+    background-size:cover;
+    background-position:center;
+    overflow:hidden;
+  }
+
+  * {
+    /* ensure every element inherits cursor */
+    cursor:inherit !important;
+  }
+
+  .stage{
+    position:relative;
+    width:80vmin;
+    height:80vmin;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .folder-btn{
+    position:relative;
+    background:transparent;
+    border:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    animation:float 3s ease-in-out infinite;
+    transition:transform .25s ease;
+    z-index:10;
+    width:48vmin;
+    height:48vmin;
+    padding:0;
+  }
+  @keyframes float{
+    0%{transform:translateY(0)}
+    50%{transform:translateY(-1.2vmin)}
+    100%{transform:translateY(0)}
+  }
+  .folder-btn img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    filter:drop-shadow(0 0.6vmin 1.2vmin rgba(0,0,0,0.4));
+    transition:opacity 0.25s ease;
+    display:block;
+  }
+
+  .orbit-container{
+    position:absolute;
+    inset:0;
+  }
+
+  .orbiter{
+    position:absolute;
+    left:50%;
+    top:50%;
+    background:transparent;
+    border:none;
+    opacity:0;
+    transform:translate(0,0) scale(0.8);
+    transition:opacity 0.25s ease, transform 0.3s ease;
+    z-index:5;
+    padding:0;
+  }
+  .orbiter img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    filter:drop-shadow(0 0.8vmin 1.2vmin rgba(0,0,0,0.45));
+    display:block;
+    pointer-events:none;
+  }
+
+  .hover-sign{
+    position:absolute;
+    top:-40%;
+    left:50%;
+    transform:translateX(-50%);
+    width:50%;
+    height:auto;
+    opacity:0;
+    transition:opacity 0.25s ease, transform 0.25s ease;
+    pointer-events:none;
+  }
+  .orbiter:hover .hover-sign{
+    opacity:1;
+    transform:translateX(-50%) translateY(-5%);
+  }
+
+  .folder-btn,
+  .folder-btn *,
+  .orbiter,
+  .orbiter * {
+    cursor:url('assets/handcursor.png') 16 16, pointer !important;
+  }
+
+  /* --- Shared overlay for popups --- */
+  #overlay {
+    position:fixed;
+    inset:0;
+    background-color:rgba(0,60,0,0.6);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.4s ease;
+    z-index:90;
+    cursor:url('assets/x-cursor.png') 16 16, auto !important; /* X cursor by default */
+  }
+  #overlay.visible {
+    opacity:1;
+    pointer-events:auto;
+  }
+
+  /* --- Resume Popup --- */
+  #resumeImagePopup {
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%) scale(0.5);
+    opacity:0;
+    max-width:100vw;
+    max-height:95vh;
+    object-fit:contain;
+    z-index:100;
+    transition:opacity 0.4s ease, transform 0.4s ease;
+    pointer-events:none;
+    cursor:url('assets/cursor.png') 16 16, auto !important; /* normal cursor inside image */
+  }
+  #resumeImagePopup.visible {
+    opacity:1;
+    transform:translate(-50%,-50%) scale(1);
+    pointer-events:auto;
+  }
+  #resumeImagePopup.fly-away {
+    top:-30%;
+    opacity:0;
+    transform:translate(-50%,-50%) scale(0.4);
+    pointer-events:none;
+  }
+
+#resumeDownloadBtn {
+  position:fixed;
+  bottom:1.5%;
+  left:75%;
+  transform:translateX(-50%) scale(0.9);
+  opacity:0;
+  z-index:101;
+  background:transparent;
+  border:none;
+  padding:0;
+  transition:opacity 0.4s ease, transform 0.4s ease;
+  cursor:url('assets/handcursor.png') 16 16, pointer !important;
+  pointer-events:none; /* Disable all clicks when hidden */
+}
+
+#resumeDownloadBtn img {
+  width:calc(12vmin * 3);
+  height:auto;
+  object-fit:contain;
+  filter:drop-shadow(0 0.6vmin 1.2vmin rgba(0,0,0,0.5));
+  transition:transform 0.2s ease;
+}
+#resumeDownloadBtn:hover {
+  transform:translateX(-50%) scale(1.05);
+}
+#resumeDownloadBtn.visible {
+  opacity:1;
+  transform:translateX(-50%) scale(1);
+  pointer-events:auto; /* Reactivate clicks only when visible */
+}
+
+  /* --- Award Certificate Popup (no download button) --- */
+  #awardImagePopup {
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%) scale(0.5);
+    opacity:0;
+    max-width:85vw;
+    max-height:80vh;
+    object-fit:contain;
+    z-index:100;
+    transition:opacity 0.4s ease, transform 0.4s ease;
+    pointer-events:none;
+    cursor:url('assets/cursor.png') 16 16, auto !important; /* normal cursor inside image */
+  }
+  #awardImagePopup.visible {
+    opacity:1;
+    transform:translate(-50%,-50%) scale(1);
+    pointer-events:auto;
+  }
+  #awardImagePopup.fly-away {
+    top:-30%;
+    opacity:0;
+    transform:translate(-50%,-50%) scale(0.3);
+    pointer-events:none;
+  }
+    /* --- Photography Viewer --- */
+  #photoViewer {
+    position:fixed;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    background-color:rgba(0,60,0,0.6);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.4s ease;
+    z-index:100;
+    cursor:url('assets/x-cursor.png') 16 16, auto !important;
+  }
+  #photoViewer.visible {
+    opacity:1;
+    pointer-events:auto;
+  }
+
+  #photoImage {
+    max-width:80vw;
+    max-height:75vh;
+    object-fit:contain;
+    margin-bottom:5vmin;
+    cursor:url('assets/cursor.png') 16 16, auto !important;
+    transition:opacity 0.3s ease;
+  }
+
+  #photoControls {
+  position:fixed;                     /* stay fixed at bottom of screen */
+  bottom:1vmin;                       /* distance from bottom edge */
+  left:50%;                           /* center horizontally */
+  transform:translateX(-50%);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:5vmin;
+  z-index:102;                        /* above photos/grid */
+  pointer-events:auto;
+}
+
+  #photoControls button {
+    background:transparent;
+    border:none;
+    padding:0;
+    cursor:url('assets/handcursor.png') 16 16, pointer !important;
+  }
+
+  #photoControls img {
+    width:16vmin;
+    height:auto;
+    filter:drop-shadow(0 0.6vmin 1.2vmin rgba(0,0,0,0.5));
+    transition:transform 0.25s ease;
+  }
+
+  #photoControls button:hover img {
+    transform:scale(1.1);
+  }
+
+  /* Grid view */
+/* Allow page-level scrolling of the gallery even when not directly over thumbnails */
+  #photoViewer.grid {
+  overflow: hidden; /* disable all scrolling */
+  }
+
+  #photoViewer.grid #photoImage {
+    display:none;
+  }
+
+  #photoViewer.grid::before {
+    content:"";
+    position:absolute;
+    inset:10%;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    grid-template-rows:repeat(4,1fr);
+    gap:1vmin;
+    background:transparent;
+  }
+
+ #photoViewer.grid .grid-container {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:flex-start;
+  overflow:hidden;             /* enables vertical scrolling */
+  margin: 6vmin auto 16vmin;         /* top/side/bottom spacing (bottom clears controls) */
+  padding: 0;                        /* padding handled by viewer margins now */
+  gap: 1vmin;                        /* 👈 smaller margin between thumbnails */
+  box-sizing: border-box;
+  pointer-events: auto;          /* ensures the grid scroll area receives wheel events */
+}
+
+.grid-container img {
+  width:18vmin;                /* thumbnail size */
+  height:18vmin;
+  object-fit:cover;
+  border-radius:6px;
+  transition:transform 0.2s ease;
+  cursor:url('assets/handcursor.png') 16 16, pointer !important;
+}
+
+.grid-container img:hover {
+  transform:scale(1.05);
+}
+</style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <button id="folder" class="folder-btn" aria-label="Open folder">
+      <img id="folderImage" src="assets/folder.png" alt="Folder icon">
+    </button>
+    <div class="orbit-container" id="orbit"></div>
+  </div>
+
+  <!-- Shared dark green overlay -->
+  <div id="overlay"></div>
+
+  <!-- Resume popup -->
+  <img id="resumeImagePopup" src="assets/resumeimage.png" alt="Resume full image" />
+
+  <!-- Award certificate popup -->
+  <img id="awardImagePopup" src="assets/award-certificate.png" alt="Award certificate" />
+
+  <!-- Resume download button (kept for resume only) -->
+  <button id="resumeDownloadBtn">
+    <img src="assets/resume-download.png" alt="Download Resume">
+  </button>
+
+  <!-- Photography viewer popup -->
+  <div id="photoViewer">
+    <img id="photoImage" src="" alt="Photo viewer">
+    <div id="photoControls">
+      <button id="photoPrev"><img src="assets/left-index.png" alt="Previous"></button>
+      <button id="photoGrid"><img src="assets/gallery.png" alt="Gallery"></button>
+      <button id="photoNext"><img src="assets/right-index.png" alt="Next"></button>
+    </div>
+  </div>
+<script>
+
+const orbitItems=[
+  {name:'Social Media', file:'assets/social.png', url:'https://www.canva.com/design/DAGXg344xEM/2MgSCJpfdI5IKko544yXAQ/view'},
+  {name:'Awards',       file:'assets/awards.png', url:'#'}, /* overridden to popup */
+  {name:'Podcasts',     file:'assets/podcasts.png', url:'https://podcasts.apple.com/us/podcast/peking-hotel-with-liu-he/id1748271770'},
+  {name:'Writings',     file:'assets/writings.png', url:'https://muckrack.com/aoruipi'},
+  {name:'Photography',  file:'assets/photography.png', url:'https://aurorapiaorui.wixsite.com/api100/photo'},
+  {name:'Resume',       file:'assets/resume.png', url:'#'} /* popup */
+];
+
+const stage=document.getElementById('stage');
+const folder=document.getElementById('folder');
+const folderImage=document.getElementById('folderImage');
+const orbit=document.getElementById('orbit');
+
+const overlay=document.getElementById('overlay');
+
+const resumeImagePopup=document.getElementById('resumeImagePopup');
+const resumeDownloadBtn=document.getElementById('resumeDownloadBtn');
+
+const awardImagePopup=document.getElementById('awardImagePopup');
+
+let expanded=false, rafId=null, startTime=null;
+let rotationSpeed=0.02;
+let radius=0;
+let resumeActive=false;
+let awardActive=false;
+let photoActive=false;
+let photoIndex=0;
+
+const folderClosedImage='assets/folder.png';
+const folderOpenImage='assets/folder-open.png';
+
+/* Create orbiters */
+const orbiters=orbitItems.map(cfg=>{
+  const el=document.createElement('button');
+  el.className='orbiter';
+  el.setAttribute('aria-label',cfg.name);
+  el.innerHTML=`<img src="${cfg.file}" alt="${cfg.name}">
+    <img class="hover-sign" src="assets/${cfg.name.toLowerCase().replace(/\s/g,'')}-sign.png" alt="${cfg.name} sign">`;
+
+  el.addEventListener('click',e=>{
+    e.stopPropagation();
+    if(!expanded || resumeActive || awardActive) return;
+
+  if(cfg.name==='Resume'){
+  triggerResumeMode();
+} else if(cfg.name==='Awards'){
+  triggerAwardMode();
+} else if(cfg.name==='Photography'){
+  triggerPhotoMode();
+} else {
+  const newWin=window.open(cfg.url,'_blank','noopener,noreferrer');
+  if(newWin) newWin.opener=null;
+}
+  });
+
+  orbit.appendChild(el);
+  return el;
+});
+
+/* --- MODE HANDLERS --- */
+function collapseOrbitersForModal(){
+  orbiters.forEach(el=>{
+    el.style.transform='translate(0,0) scale(0.5)';
+    el.style.opacity='0';
+  });
+  if(rafId) cancelAnimationFrame(rafId);
+  expanded=false;
+  folderImage.src=folderClosedImage;
+}
+
+function triggerResumeMode(){
+  resumeActive=true;
+  collapseOrbitersForModal();
+  setTimeout(()=>{
+    overlay.classList.add('visible');
+    resumeImagePopup.classList.add('visible');
+    resumeDownloadBtn.classList.add('visible');
+    resumeDownloadBtn.disabled = false; // enable again
+  },400);
+}
+
+function triggerAwardMode(){
+  awardActive = true;
+  collapseOrbitersForModal();
+  setTimeout(() => {
+    overlay.classList.add('visible');
+    awardImagePopup.classList.add('visible');
+    resumeDownloadBtn.classList.remove('visible');
+    resumeDownloadBtn.disabled = true; // disable while award active
+  }, 400);
+}
+
+/* --- Photography Mode --- */
+const photoViewer=document.getElementById('photoViewer');
+const photoImage=document.getElementById('photoImage');
+const photoPrev=document.getElementById('photoPrev');
+const photoNext=document.getElementById('photoNext');
+const photoGrid=document.getElementById('photoGrid');
+
+function triggerPhotoMode(){
+  photoActive=true;
+  collapseOrbitersForModal();
+  photoIndex=1;
+  showPhoto(photoIndex);
+  setTimeout(()=>{
+    photoViewer.classList.add('visible');
+  },400);
+}
+
+function showPhoto(index){
+  photoImage.src=`assets/photo${index}.jpg`;
+  photoImage.style.opacity='0';
+  setTimeout(()=>photoImage.style.opacity='1',50);
+}
+
+/* Controls */
+photoPrev.addEventListener('click',e=>{
+  e.stopPropagation();
+  photoIndex = photoIndex <= 1 ? 16 : photoIndex - 1;
+  showPhoto(photoIndex);
+});
+
+photoNext.addEventListener('click',e=>{
+  e.stopPropagation();
+  photoIndex = photoIndex >= 16 ? 1 : photoIndex + 1;
+  showPhoto(photoIndex);
+});
+
+photoGrid.addEventListener('click',e=>{
+  e.stopPropagation();
+  if(photoViewer.classList.contains('grid')){
+    photoViewer.classList.remove('grid');
+    document.querySelector('.grid-container')?.remove();
+    showPhoto(photoIndex);
+  } else {
+    // Build grid
+    const grid=document.createElement('div');
+    grid.className='grid-container';
+    for(let i=1;i<=16;i++){
+      const img=document.createElement('img');
+      img.src=`assets/photo${i}.jpg`;
+      img.addEventListener('click',()=>{
+        photoViewer.classList.remove('grid');
+        grid.remove();
+        photoIndex=i;
+        showPhoto(i);
+      });
+      grid.appendChild(img);
+    }
+    photoViewer.appendChild(grid);
+    photoViewer.classList.add('grid');
+  }
+});
+
+/* Close viewer when clicking outside */
+photoViewer.addEventListener('click', e => {
+  const grid = document.querySelector('.grid-container');
+  const controls = document.getElementById('photoControls');
+  const insideGrid = grid && grid.contains(e.target);
+  const insideControls = controls && controls.contains(e.target);
+
+  // If click is outside the gallery grid and controls
+  if (!insideGrid && !insideControls) {
+    photoViewer.classList.remove('visible', 'grid');
+    grid?.remove();
+    photoActive = false;
+    expanded = false;
+    folderImage.src = folderClosedImage;
+
+    // Restore normal cursor
+    document.body.style.cursor = `url('assets/cursor.png') 16 16, auto`;
+  }
+});
+
+function closeResumePopup(){
+  resumeImagePopup.classList.remove('visible');
+  resumeDownloadBtn.classList.remove('visible');
+  overlay.classList.remove('visible');
+  resumeImagePopup.classList.add('fly-away');
+  setTimeout(()=>{
+    resumeImagePopup.classList.remove('fly-away');
+    resumeActive=false;
+    expanded=false;            // ensure one-click restart
+    folderImage.src=folderClosedImage;
+  },700);
+}
+
+function closeAwardPopup(){
+  awardImagePopup.classList.remove('visible');
+  overlay.classList.remove('visible');
+  awardImagePopup.classList.add('fly-away');
+  setTimeout(()=>{
+    awardImagePopup.classList.remove('fly-away');
+    awardActive=false;
+    expanded=false;            // ensure one-click restart
+    folderImage.src=folderClosedImage;
+  },700);
+}
+
+/* --- ORBIT LOGIC --- */
+function updateSizes(){
+  const stageRect=stage.getBoundingClientRect();
+  const folderRect=folder.getBoundingClientRect();
+  const folderSize=Math.min(folderRect.width,folderRect.height);
+  radius=Math.min(stageRect.width,stageRect.height)*0.42;
+  const orbSize=folderSize*0.66;
+  orbiters.forEach(el=>{
+    el.style.width=orbSize+"px";
+    el.style.height=orbSize+"px";
+    el.style.marginLeft=-(orbSize/2)+"px";
+    el.style.marginTop=-(orbSize/2)+"px";
+  });
+}
+function animate(time){
+  if(!expanded) return;
+  if(!startTime) startTime=time;
+  const t=(time-startTime)/1000;
+  orbiters.forEach((el,i)=>{
+    const angle=(i/orbiters.length)*Math.PI*2+t*rotationSpeed;
+    const x=Math.cos(angle)*radius;
+    const y=Math.sin(angle)*radius;
+    el.style.transform=`translate(${x}px,${y}px) scale(1)`;
+    el.style.opacity='1';
+  });
+  rafId=requestAnimationFrame(animate);
+}
+function expand(){
+  if(expanded) return;
+  expanded=true;
+  folderImage.src=folderOpenImage;
+  updateSizes();
+  orbiters.forEach(el=>{el.style.opacity='1';el.style.zIndex='15';});
+  startTime=null;
+  rafId=requestAnimationFrame(animate);
+}
+function collapse(){
+  if(!expanded) return;
+  expanded=false;
+  folderImage.src=folderClosedImage;
+  orbiters.forEach(el=>{
+    el.style.opacity='0';
+    el.style.transform='translate(0,0) scale(0.8)';
+    el.style.zIndex='5';
+  });
+  if(rafId) cancelAnimationFrame(rafId);
+}
+
+/* --- EVENTS --- */
+folder.addEventListener('click',e=>{
+  e.stopPropagation();
+  if(resumeActive || awardActive) return;
+  expanded?collapse():expand();
+});
+
+/* Close whichever modal is open by clicking overlay */
+overlay.addEventListener('click',()=>{
+  if(resumeActive) closeResumePopup();
+  else if(awardActive) closeAwardPopup();
+});
+
+/* Resume Download button (resume only) */
+resumeDownloadBtn.addEventListener('click',e=>{
+  e.stopPropagation();
+  const newTab=window.open('assets/Aorui-Resume.pdf','_blank','noopener,noreferrer');
+  if(newTab){ newTab.opener=null; }
+});
+
+/* Cursor logic:
+   - When a modal is open:
+     - inside popup image => normal cursor
+     - over resume download => hand cursor
+     - elsewhere on overlay => X cursor
+*/
+document.addEventListener('mousemove', e => {
+  if (!resumeActive && !awardActive) return;
+
+  let insideImage = false;
+  let insideDownload = false;
+
+  if (resumeActive && resumeImagePopup.classList.contains('visible')) {
+    const r = resumeImagePopup.getBoundingClientRect();
+    insideImage =
+      e.clientX >= r.left && e.clientX <= r.right &&
+      e.clientY >= r.top  && e.clientY <= r.bottom;
+
+    if (resumeDownloadBtn.classList.contains('visible')) {
+      const b = resumeDownloadBtn.getBoundingClientRect();
+      insideDownload =
+        e.clientX >= b.left && e.clientX <= b.right &&
+        e.clientY >= b.top  && e.clientY <= b.bottom;
+    }
+  }
+
+  if (awardActive && awardImagePopup.classList.contains('visible')) {
+    const a = awardImagePopup.getBoundingClientRect();
+    const insideAward =
+      e.clientX >= a.left && e.clientX <= a.right &&
+      e.clientY >= a.top  && e.clientY <= a.bottom;
+    insideImage = insideImage || insideAward;
+  }
+
+  if (insideDownload) {
+    document.body.style.cursor = `url('assets/handcursor.png') 16 16, pointer`;
+  } else if (insideImage) {
+    document.body.style.cursor = `url('assets/cursor.png') 16 16, auto`;
+  } else {
+    document.body.style.cursor = `url('assets/x-cursor.png') 16 16, auto`;
+  }
+});
+
+window.addEventListener('resize',updateSizes);
+updateSizes();
+</script>
+</body>
+</html>
