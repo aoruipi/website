@@ -195,15 +195,15 @@
     left:50%;
     transform:translate(-50%,-50%) scale(0.5);
     opacity:0;
-    max-width:85vw;
-    max-height:80vh;
+    max-width:95vw;
+    max-height:90vh;
     z-index:100;
     transition:opacity 0.4s ease, transform 0.4s ease;
     pointer-events:none;
     display:flex;
     align-items:center;
     justify-content:center;
-    cursor:url('assets/cursor.png') 32 32, auto !important; /* normal cursor inside image */
+    cursor:url('assets/cursor.png') 16 16, auto !important; /* normal cursor inside image */
   }
   #awardImagePopup.visible {
     opacity:1;
@@ -213,7 +213,7 @@
   #awardImagePopup.fly-away {
     top:-30%;
     opacity:0;
-    transform:translate(-50%,-50%) scale(0.3);
+    transform:translate(-50%,-50%) scale(0.4);
     pointer-events:none;
   }
 
@@ -241,7 +241,6 @@
     pointer-events:none;
     transition:opacity 0.4s ease;
     z-index:100;
-    cursor:url('assets/x-cursor.png') 16 16, auto !important;
   }
   #photoViewer.visible {
     opacity:1;
@@ -253,7 +252,6 @@
     max-height:75vh;
     object-fit:contain;
     margin-bottom:5vmin;
-    cursor:url('assets/cursor.png') 16 16, auto !important;
     transition:opacity 0.3s ease;
   }
 
@@ -285,6 +283,8 @@
     height:auto;
     filter:drop-shadow(0 0.6vmin 1.2vmin rgba(0,0,0,0.5));
     transition:transform 0.25s ease;
+    pointer-events:none; /* keep button cursor consistent */
+    cursor:inherit;
   }
 
   #photoControls button:hover img {
@@ -346,7 +346,7 @@
     height:4.4vmin;
     background:transparent url('assets/window-close.png') center/contain no-repeat;
     border:none;
-    cursor:url('assets/x-cursor.png') 32 32, pointer !important;
+    cursor:url('assets/x-cursor.png') 16 16, pointer !important;
     transition:transform 0.2s ease;
     z-index:200;
     padding:0;
@@ -527,6 +527,8 @@ const resumeDownloadBtn=document.getElementById('resumeDownloadBtn');
 
 const awardImagePopup=document.getElementById('awardImagePopup');
 const awardClose=document.getElementById('awardClose');
+const awardImage=document.querySelector('#awardImagePopup img');
+const awardCard=document.querySelector('#awardImagePopup .award-card');
 const podcastPlayer=document.getElementById('podcastPlayer');
 const podcastClose=document.getElementById('podcastClose');
 
@@ -540,9 +542,14 @@ let photoActive=false;
 let photoIndex=0;
 let galleryMode=false;
 let gridContainer=null;
+let photoLoadId=0;
+let lastPointer=null;
 
 const folderClosedImage='assets/folder.png';
 const folderOpenImage='assets/folder-open.png';
+const CURSOR_DEFAULT=`url('assets/cursor.png') 16 16, auto`;
+const CURSOR_HAND=`url('assets/handcursor.png') 16 16, pointer`;
+const CURSOR_CLOSE=`url('assets/x-cursor.png') 16 16, auto`;
 
 /* Create orbiters */
 const orbiters=orbitItems.map(cfg=>{
@@ -598,6 +605,7 @@ function openPodcastPlayer(){
   overlay.classList.add('visible');
   podcastPlayer.classList.add('visible');
   podcastPlayer.setAttribute('aria-hidden','false');
+  applyModalCursor();
 }
 
 function closePodcastPlayer({skipExpand=false}={}){
@@ -615,6 +623,7 @@ function closePodcastPlayer({skipExpand=false}={}){
       },350);
     }
   }
+  applyModalCursor();
 }
 
 function triggerResumeMode(){
@@ -625,6 +634,7 @@ function triggerResumeMode(){
     resumeImagePopup.classList.add('visible');
     resumeDownloadBtn.classList.add('visible');
     resumeDownloadBtn.disabled = false; // enable again
+    applyModalCursor();
   },400);
 }
 
@@ -636,6 +646,7 @@ function triggerAwardMode(){
     awardImagePopup.classList.add('visible');
     resumeDownloadBtn.classList.remove('visible');
     resumeDownloadBtn.disabled = true; // disable while award active
+    applyModalCursor();
   }, 400);
 }
 
@@ -655,13 +666,25 @@ function triggerPhotoMode(){
   showPhoto(photoIndex);
   setTimeout(()=>{
     photoViewer.classList.add('visible');
+    applyModalCursor();
   },400);
 }
 
 function showPhoto(index){
-  photoImage.src=`assets/photo${index}.jpg`;
+  const newSrc=`assets/photo${index}.jpg`;
+  const loadId=++photoLoadId;
   photoImage.style.opacity='0';
-  setTimeout(()=>photoImage.style.opacity='1',70);
+
+  const tempImage=new Image();
+  const revealImage=()=>{
+    if(loadId!==photoLoadId) return;
+    photoImage.src=newSrc;
+    requestAnimationFrame(()=>photoImage.style.opacity='1');
+  };
+
+  tempImage.onload=revealImage;
+  tempImage.onerror=revealImage;
+  tempImage.src=newSrc;
 }
 
 function setNavButtonsState(enabled){
@@ -744,7 +767,7 @@ function closePhotoViewer(){
   gridContainer=null;
   photoViewer.classList.remove('visible','grid','grid-leaving');
   photoActive=false;
-  document.body.style.cursor = `url('assets/cursor.png') 16 16, auto`;
+  applyModalCursor();
   expanded=false;
   folderImage.src=folderClosedImage;
   setTimeout(()=>{
@@ -799,7 +822,8 @@ function closeResumePopup(){
   resumeImagePopup.classList.remove('visible');
   resumeDownloadBtn.classList.remove('visible');
   overlay.classList.remove('visible');
-  document.body.style.cursor = `url('assets/cursor.png') 16 16, auto`;
+  document.body.style.cursor = CURSOR_DEFAULT;
+  applyModalCursor();
   resumeImagePopup.classList.add('fly-away');
   setTimeout(()=>{
     resumeImagePopup.classList.remove('fly-away');
@@ -816,7 +840,8 @@ function closeAwardPopup(){
   awardActive=false;
   awardImagePopup.classList.remove('visible');
   overlay.classList.remove('visible');
-  document.body.style.cursor = `url('assets/cursor.png') 32 32, auto`;
+  document.body.style.cursor = CURSOR_DEFAULT;
+  applyModalCursor();
   awardImagePopup.classList.add('fly-away');
   setTimeout(()=>{
     awardImagePopup.classList.remove('fly-away');
@@ -826,6 +851,19 @@ function closeAwardPopup(){
       expand();
     }
   },700);
+}
+
+function updateAwardImageSize(){
+  if(!awardImage) return;
+  const viewportWidth=window.innerWidth;
+  const viewportHeight=window.innerHeight;
+  const maxWidth=viewportWidth*0.95;
+  const maxHeight=viewportHeight*0.9;
+  const baseSize=Math.min(viewportWidth*0.5, viewportHeight*0.65);
+  const scaledSize=Math.min(baseSize*1.6, maxWidth);
+  awardImage.style.width=scaledSize+"px";
+  awardImage.style.maxHeight=maxHeight+"px";
+  awardImage.style.height='auto';
 }
 
 /* --- ORBIT LOGIC --- */
@@ -886,7 +924,17 @@ folder.addEventListener('click',e=>{
 
 /* Close whichever modal is open by clicking overlay */
 overlay.addEventListener('click',()=>{
-  if(resumeActive) closeResumePopup();
+  if(resumeActive){
+    closeResumePopup();
+    return;
+  }
+  if(awardActive){
+    closeAwardPopup();
+    return;
+  }
+  if(podcastActive){
+    closePodcastPlayer();
+  }
 });
 
 awardClose.addEventListener('click',e=>{
@@ -906,41 +954,68 @@ resumeDownloadBtn.addEventListener('click',e=>{
   if(newTab){ newTab.opener=null; }
 });
 
-/* Cursor logic:
-   - When a modal is open:
-     - inside popup image => normal cursor
-     - over resume download => hand cursor
-     - elsewhere on overlay => X cursor
-*/
-document.addEventListener('mousemove', e => {
-  if (!resumeActive || !resumeImagePopup.classList.contains('visible')) return;
+/* Cursor logic across resume, award, podcast, and photo overlays */
+function isPointerInside(el,x,y){
+  if(!el) return false;
+  const rect=el.getBoundingClientRect();
+  return x>=rect.left && x<=rect.right && y>=rect.top && y<=rect.bottom;
+}
 
-  let insideImage = false;
-  let insideDownload = false;
+function applyModalCursor(){
+  const resumeVisible=resumeActive && resumeImagePopup.classList.contains('visible');
+  const awardVisible=awardActive && awardImagePopup.classList.contains('visible');
+  const podcastVisible=podcastActive && podcastPlayer.classList.contains('visible');
+  const photoVisible=photoActive && photoViewer.classList.contains('visible');
 
-  const r = resumeImagePopup.getBoundingClientRect();
-  insideImage =
-    e.clientX >= r.left && e.clientX <= r.right &&
-    e.clientY >= r.top  && e.clientY <= r.bottom;
-
-  if (resumeDownloadBtn.classList.contains('visible')) {
-    const b = resumeDownloadBtn.getBoundingClientRect();
-    insideDownload =
-      e.clientX >= b.left && e.clientX <= b.right &&
-      e.clientY >= b.top  && e.clientY <= b.bottom;
+  if(!resumeVisible && !awardVisible && !podcastVisible && !photoVisible){
+    document.body.style.cursor=CURSOR_DEFAULT;
+    return;
   }
 
-  if (insideDownload) {
-    document.body.style.cursor = `url('assets/handcursor.png') 16 16, pointer`;
-  } else if (insideImage) {
-    document.body.style.cursor = `url('assets/cursor.png') 16 16, auto`;
+  if(!lastPointer){
+    document.body.style.cursor=CURSOR_CLOSE;
+    return;
+  }
+
+  const {x,y}=lastPointer;
+  const insideDownload=resumeDownloadBtn.classList.contains('visible') && isPointerInside(resumeDownloadBtn,x,y);
+  const insideResume=resumeVisible && isPointerInside(resumeImagePopup,x,y);
+  const insideAward=awardVisible && isPointerInside(awardCard || awardImagePopup,x,y);
+  const insidePodcast=podcastVisible && isPointerInside(podcastPlayer,x,y);
+  const insidePhotoImage=photoVisible && isPointerInside(photoImage,x,y);
+  const insidePhotoControls=photoVisible && isPointerInside(photoControls,x,y);
+  const insidePhotoGrid=photoVisible && gridContainer && isPointerInside(gridContainer,x,y);
+
+  if(insideDownload){
+    document.body.style.cursor=CURSOR_HAND;
+  } else if(
+    insideResume ||
+    insideAward ||
+    insidePodcast ||
+    insidePhotoImage ||
+    insidePhotoControls ||
+    insidePhotoGrid
+  ){
+    document.body.style.cursor=CURSOR_DEFAULT;
   } else {
-    document.body.style.cursor = `url('assets/x-cursor.png') 16 16, auto`;
+    document.body.style.cursor=CURSOR_CLOSE;
   }
-});
+}
 
-window.addEventListener('resize',updateSizes);
-updateSizes();
+function handlePointerMove(e){
+  lastPointer={x:e.clientX,y:e.clientY};
+  applyModalCursor();
+}
+
+document.addEventListener('mousemove',handlePointerMove);
+
+function handleResize(){
+  updateSizes();
+  updateAwardImageSize();
+}
+
+window.addEventListener('resize',handleResize);
+handleResize();
 </script>
 </body>
 </html>
