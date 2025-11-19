@@ -35,6 +35,7 @@
     display:flex;
     align-items:center;
     justify-content:center;
+    transition:transform 0.4s ease;
   }
 
   .folder-btn{
@@ -123,7 +124,6 @@
     pointer-events:none;
     transition:opacity 0.4s ease;
     z-index:90;
-    cursor:url('assets/x-cursor.png') 16 16, auto !important; /* X cursor by default */
   }
   #overlay.visible {
     opacity:1;
@@ -168,7 +168,6 @@
   border:none;
   padding:0;
   transition:opacity 0.4s ease, transform 0.4s ease;
-  cursor:url('assets/handcursor.png') 16 16, pointer !important;
   pointer-events:none; /* Disable all clicks when hidden */
 }
 
@@ -186,6 +185,7 @@
   opacity:1;
   transform:translateX(-50%) scale(1);
   pointer-events:auto; /* Reactivate clicks only when visible */
+  cursor:url('assets/handcursor.png') 16 16, pointer !important;
 }
 
   /* --- Award Certificate Popup (no download button) --- */
@@ -197,11 +197,13 @@
     opacity:0;
     max-width:85vw;
     max-height:80vh;
-    object-fit:contain;
     z-index:100;
     transition:opacity 0.4s ease, transform 0.4s ease;
     pointer-events:none;
-    cursor:url('assets/cursor.png') 16 16, auto !important; /* normal cursor inside image */
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:url('assets/cursor.png') 32 32, auto !important; /* normal cursor inside image */
   }
   #awardImagePopup.visible {
     opacity:1;
@@ -212,6 +214,18 @@
     top:-30%;
     opacity:0;
     transform:translate(-50%,-50%) scale(0.3);
+    pointer-events:none;
+  }
+
+  .award-card{
+    position:relative;
+    display:inline-block;
+  }
+
+  #awardImagePopup img{
+    width:100%;
+    height:auto;
+    display:block;
     pointer-events:none;
   }
     /* --- Photography Viewer --- */
@@ -260,6 +274,9 @@
     background:transparent;
     border:none;
     padding:0;
+  }
+
+  #photoViewer.visible #photoControls button{
     cursor:url('assets/handcursor.png') 16 16, pointer !important;
   }
 
@@ -272,6 +289,100 @@
 
   #photoControls button:hover img {
     transform:scale(1.1);
+  }
+
+  #photoControls button:disabled{
+    cursor:url('assets/cursor.png') 16 16, auto !important;
+  }
+
+  #photoControls button:disabled img{
+    opacity:0.35;
+    transform:none;
+  }
+
+  .podcast-player{
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%) scale(0.95);
+    width:min(85vw,680px);
+    background:rgba(0,60,0,0.88);
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,0.08);
+    box-shadow:0 1.6vmin 3vmin rgba(0,0,0,0.35);
+    padding:3vmin 3vmin 2.5vmin;
+    transition:opacity 0.35s ease, transform 0.35s ease;
+    opacity:0;
+    pointer-events:none;
+    z-index:120;
+    overflow:visible;                    /* allow badge to float above window */
+    scrollbar-width:none;                /* hide firefox scrollbar when focusable */
+    -ms-overflow-style:none;             /* hide legacy IE scrollbar */
+    cursor:url('assets/cursor.png') 16 16, auto !important;
+  }
+
+  .podcast-player.visible{
+    opacity:1;
+    transform:translate(-50%,-50%) scale(1);
+    pointer-events:auto;
+  }
+
+  .podcast-player .player-badge{
+    position:absolute;
+    top:-18vmin;
+    left:-3.5vmin;
+    transform:translate(-50%,-50%);
+    width: 30vmin;
+    height:auto;
+    pointer-events:none;
+    animation:float 3s ease-in-out infinite;
+    filter:drop-shadow(0 1vmin 1.8vmin rgba(0,0,0,0.35));
+    z-index:160;
+  }
+
+  .window-close-btn{
+    position:absolute;
+    width:4.4vmin;
+    height:4.4vmin;
+    background:transparent url('assets/window-close.png') center/contain no-repeat;
+    border:none;
+    cursor:url('assets/x-cursor.png') 32 32, pointer !important;
+    transition:transform 0.2s ease;
+    z-index:200;
+    padding:0;
+    filter:drop-shadow(0 0.6vmin 1vmin rgba(0,0,0,0.55));
+  }
+
+  .window-close-btn:hover{
+    transform:scale(1.08);
+  }
+
+  .window-close-btn:focus-visible{
+    outline:2px solid rgba(255,255,255,0.8);
+    outline-offset:3px;
+  }
+
+  #podcastClose{
+    top:1.2vmin;
+    right:1.2vmin;
+  }
+
+  #awardClose{
+    top:1vmin;
+    right:1vmin;
+  }
+
+  #podcastPlayer iframe{
+    width:100% !important;
+    height:min(60vh,420px);
+    border:0;
+    border-radius:12px;
+    scrollbar-width:none;
+  }
+
+  .podcast-player::-webkit-scrollbar,
+  #podcastPlayer iframe::-webkit-scrollbar{
+    display:none;
   }
 
   /* Grid view */
@@ -295,7 +406,7 @@
     background:transparent;
   }
 
- #photoViewer.grid .grid-container {
+.grid-container {
   display:flex;
   flex-wrap:wrap;
   justify-content:center;
@@ -306,6 +417,14 @@
   gap: 1vmin;                        /* 👈 smaller margin between thumbnails */
   box-sizing: border-box;
   pointer-events: auto;          /* ensures the grid scroll area receives wheel events */
+  opacity:0;
+  transform:translateY(3vmin);
+  transition:opacity 0.35s ease, transform 0.35s ease;
+}
+
+.grid-container.visible{
+  opacity:1;
+  transform:translateY(0);
 }
 
 .grid-container img {
@@ -320,6 +439,26 @@
 .grid-container img:hover {
   transform:scale(1.05);
 }
+
+  @media (max-width:700px){
+    .podcast-player{
+      width:90vw;
+      padding:4vmin 4vmin 3vmin;
+    }
+
+    .podcast-player .player-badge{
+      width:21vmin;
+    }
+
+    #podcastClose{
+      width:6.6vmin;
+      height:6.6vmin;
+    }
+
+    #podcastPlayer iframe{
+      height:min(65vh,360px);
+    }
+  }
 </style>
 </head>
 <body>
@@ -337,12 +476,24 @@
   <img id="resumeImagePopup" src="assets/resumeimage.png" alt="Resume full image" />
 
   <!-- Award certificate popup -->
-  <img id="awardImagePopup" src="assets/award-certificate.png" alt="Award certificate" />
+  <div id="awardImagePopup" role="dialog" aria-label="Award certificate">
+    <div class="award-card">
+      <img src="assets/award-certificate.png" alt="Award certificate image">
+      <button id="awardClose" class="window-close-btn" aria-label="Close award certificate"></button>
+    </div>
+  </div>
 
   <!-- Resume download button (kept for resume only) -->
   <button id="resumeDownloadBtn">
     <img src="assets/resume-download.png" alt="Download Resume">
   </button>
+
+  <!-- Podcast player -->
+  <div id="podcastPlayer" class="podcast-player" aria-hidden="true">
+    <img class="player-badge" src="assets/podcast-player.png" alt="Podcast icon">
+    <button id="podcastClose" class="window-close-btn" aria-label="Hide podcast player"></button>
+    <iframe allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" frameborder="0" height="450" scrolling="no" style="width:100%;max-width:660px;overflow:hidden;border-radius:10px;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" src="https://embed.podcasts.apple.com/us/podcast/peking-hotel-with-liu-he/id1748271770"></iframe>
+  </div>
 
   <!-- Photography viewer popup -->
   <div id="photoViewer">
@@ -358,7 +509,7 @@
 const orbitItems=[
   {name:'Social Media', file:'assets/social.png', url:'https://www.canva.com/design/DAGXg344xEM/2MgSCJpfdI5IKko544yXAQ/view'},
   {name:'Awards',       file:'assets/awards.png', url:'#'}, /* overridden to popup */
-  {name:'Podcasts',     file:'assets/podcasts.png', url:'https://podcasts.apple.com/us/podcast/peking-hotel-with-liu-he/id1748271770'},
+  {name:'Podcasts',     file:'assets/podcasts.png', url:null},
   {name:'Writings',     file:'assets/writings.png', url:'https://muckrack.com/aoruipi'},
   {name:'Photography',  file:'assets/photography.png', url:'https://aurorapiaorui.wixsite.com/api100/photo'},
   {name:'Resume',       file:'assets/resume.png', url:'#'} /* popup */
@@ -375,14 +526,20 @@ const resumeImagePopup=document.getElementById('resumeImagePopup');
 const resumeDownloadBtn=document.getElementById('resumeDownloadBtn');
 
 const awardImagePopup=document.getElementById('awardImagePopup');
+const awardClose=document.getElementById('awardClose');
+const podcastPlayer=document.getElementById('podcastPlayer');
+const podcastClose=document.getElementById('podcastClose');
 
 let expanded=false, rafId=null, startTime=null;
 let rotationSpeed=0.02;
 let radius=0;
 let resumeActive=false;
 let awardActive=false;
+let podcastActive=false;
 let photoActive=false;
 let photoIndex=0;
+let galleryMode=false;
+let gridContainer=null;
 
 const folderClosedImage='assets/folder.png';
 const folderOpenImage='assets/folder-open.png';
@@ -405,6 +562,8 @@ const orbiters=orbitItems.map(cfg=>{
   triggerAwardMode();
 } else if(cfg.name==='Photography'){
   triggerPhotoMode();
+} else if(cfg.name==='Podcasts'){
+  triggerPodcastMode();
 } else {
   const newWin=window.open(cfg.url,'_blank','noopener,noreferrer');
   if(newWin) newWin.opener=null;
@@ -417,6 +576,7 @@ const orbiters=orbitItems.map(cfg=>{
 
 /* --- MODE HANDLERS --- */
 function collapseOrbitersForModal(){
+  closePodcastPlayer({skipExpand:true});
   orbiters.forEach(el=>{
     el.style.transform='translate(0,0) scale(0.5)';
     el.style.opacity='0';
@@ -424,6 +584,37 @@ function collapseOrbitersForModal(){
   if(rafId) cancelAnimationFrame(rafId);
   expanded=false;
   folderImage.src=folderClosedImage;
+}
+
+function triggerPodcastMode(){
+  if(podcastActive) return;
+  collapseOrbitersForModal();
+  setTimeout(()=>openPodcastPlayer(),400);
+}
+
+function openPodcastPlayer(){
+  if(podcastActive) return;
+  podcastActive=true;
+  overlay.classList.add('visible');
+  podcastPlayer.classList.add('visible');
+  podcastPlayer.setAttribute('aria-hidden','false');
+}
+
+function closePodcastPlayer({skipExpand=false}={}){
+  if(!podcastActive) return;
+  podcastActive=false;
+  podcastPlayer.classList.remove('visible');
+  podcastPlayer.setAttribute('aria-hidden','true');
+  if(!resumeActive && !awardActive){
+    overlay.classList.remove('visible');
+    if(!skipExpand){
+      setTimeout(()=>{
+        if(!resumeActive && !awardActive && !expanded){
+          expand();
+        }
+      },350);
+    }
+  }
 }
 
 function triggerResumeMode(){
@@ -454,10 +645,12 @@ const photoImage=document.getElementById('photoImage');
 const photoPrev=document.getElementById('photoPrev');
 const photoNext=document.getElementById('photoNext');
 const photoGrid=document.getElementById('photoGrid');
+const photoControls=document.getElementById('photoControls');
 
 function triggerPhotoMode(){
   photoActive=true;
   collapseOrbitersForModal();
+  exitGalleryMode({instant:true});
   photoIndex=1;
   showPhoto(photoIndex);
   setTimeout(()=>{
@@ -468,90 +661,170 @@ function triggerPhotoMode(){
 function showPhoto(index){
   photoImage.src=`assets/photo${index}.jpg`;
   photoImage.style.opacity='0';
-  setTimeout(()=>photoImage.style.opacity='1',50);
+  setTimeout(()=>photoImage.style.opacity='1',70);
+}
+
+function setNavButtonsState(enabled){
+  photoPrev.disabled=!enabled;
+  photoNext.disabled=!enabled;
+}
+
+function buildGrid(){
+  gridContainer=document.createElement('div');
+  gridContainer.className='grid-container';
+  for(let i=1;i<=16;i++){
+    const img=document.createElement('img');
+    img.src=`assets/photo${i}.jpg`;
+    img.addEventListener('click',e=>{
+      e.stopPropagation();
+      exitGalleryMode({
+        onComplete:()=>{
+          photoIndex=i;
+          showPhoto(photoIndex);
+        }
+      });
+    });
+    gridContainer.appendChild(img);
+  }
+  photoViewer.appendChild(gridContainer);
+  requestAnimationFrame(()=>gridContainer.classList.add('visible'));
+}
+
+function enterGalleryMode(){
+  if(galleryMode) return;
+  galleryMode=true;
+  setNavButtonsState(false);
+  photoViewer.classList.add('grid');
+  buildGrid();
+}
+
+function exitGalleryMode({instant=false,onComplete=null}={}){
+  const finish=()=>{
+    photoViewer.classList.remove('grid','grid-leaving');
+    galleryMode=false;
+    setNavButtonsState(true);
+    onComplete?.();
+  };
+
+  if(!gridContainer){
+    finish();
+    return;
+  }
+
+  const target=gridContainer;
+
+  if(instant){
+    target.remove();
+    gridContainer=null;
+    finish();
+    return;
+  }
+
+  photoViewer.classList.add('grid-leaving');
+  target.classList.remove('visible');
+  target.style.pointerEvents='none';
+
+  let done=false;
+  const cleanup=()=>{
+    if(done) return;
+    done=true;
+    target.remove();
+    if(gridContainer===target) gridContainer=null;
+    finish();
+  };
+
+  target.addEventListener('transitionend',cleanup,{once:true});
+  setTimeout(cleanup,450);
+}
+
+function closePhotoViewer(){
+  if(!photoActive) return;
+  exitGalleryMode({instant:true});
+  gridContainer?.remove();
+  gridContainer=null;
+  photoViewer.classList.remove('visible','grid','grid-leaving');
+  photoActive=false;
+  document.body.style.cursor = `url('assets/cursor.png') 16 16, auto`;
+  expanded=false;
+  folderImage.src=folderClosedImage;
+  setTimeout(()=>{
+    if(!resumeActive && !awardActive){
+      expand();
+    }
+  },350);
 }
 
 /* Controls */
 photoPrev.addEventListener('click',e=>{
   e.stopPropagation();
+  if(galleryMode) return;
   photoIndex = photoIndex <= 1 ? 16 : photoIndex - 1;
   showPhoto(photoIndex);
 });
 
 photoNext.addEventListener('click',e=>{
   e.stopPropagation();
+  if(galleryMode) return;
   photoIndex = photoIndex >= 16 ? 1 : photoIndex + 1;
   showPhoto(photoIndex);
 });
 
 photoGrid.addEventListener('click',e=>{
   e.stopPropagation();
-  if(photoViewer.classList.contains('grid')){
-    photoViewer.classList.remove('grid');
-    document.querySelector('.grid-container')?.remove();
-    showPhoto(photoIndex);
+  if(galleryMode){
+    exitGalleryMode({onComplete:()=>showPhoto(photoIndex)});
   } else {
-    // Build grid
-    const grid=document.createElement('div');
-    grid.className='grid-container';
-    for(let i=1;i<=16;i++){
-      const img=document.createElement('img');
-      img.src=`assets/photo${i}.jpg`;
-      img.addEventListener('click',()=>{
-        photoViewer.classList.remove('grid');
-        grid.remove();
-        photoIndex=i;
-        showPhoto(i);
-      });
-      grid.appendChild(img);
-    }
-    photoViewer.appendChild(grid);
-    photoViewer.classList.add('grid');
+    enterGalleryMode();
   }
 });
 
 /* Close viewer when clicking outside */
 photoViewer.addEventListener('click', e => {
-  const grid = document.querySelector('.grid-container');
-  const controls = document.getElementById('photoControls');
-  const insideGrid = grid && grid.contains(e.target);
-  const insideControls = controls && controls.contains(e.target);
+  const insideControls=photoControls && photoControls.contains(e.target);
+  if(insideControls) return;
 
-  // If click is outside the gallery grid and controls
-  if (!insideGrid && !insideControls) {
-    photoViewer.classList.remove('visible', 'grid');
-    grid?.remove();
-    photoActive = false;
-    expanded = false;
-    folderImage.src = folderClosedImage;
-
-    // Restore normal cursor
-    document.body.style.cursor = `url('assets/cursor.png') 16 16, auto`;
+  if(galleryMode){
+    if(gridContainer && gridContainer.contains(e.target)) return;
+    closePhotoViewer();
+    return;
   }
+
+  if(photoImage.contains(e.target)) return;
+  closePhotoViewer();
 });
 
 function closeResumePopup(){
+  if(!resumeActive) return;
+  resumeActive=false;
   resumeImagePopup.classList.remove('visible');
   resumeDownloadBtn.classList.remove('visible');
   overlay.classList.remove('visible');
+  document.body.style.cursor = `url('assets/cursor.png') 16 16, auto`;
   resumeImagePopup.classList.add('fly-away');
   setTimeout(()=>{
     resumeImagePopup.classList.remove('fly-away');
-    resumeActive=false;
     expanded=false;            // ensure one-click restart
     folderImage.src=folderClosedImage;
+    if(!podcastActive && !photoActive && !awardActive){
+      expand();
+    }
   },700);
 }
 
 function closeAwardPopup(){
+  if(!awardActive) return;
+  awardActive=false;
   awardImagePopup.classList.remove('visible');
   overlay.classList.remove('visible');
+  document.body.style.cursor = `url('assets/cursor.png') 32 32, auto`;
   awardImagePopup.classList.add('fly-away');
   setTimeout(()=>{
     awardImagePopup.classList.remove('fly-away');
-    awardActive=false;
     expanded=false;            // ensure one-click restart
     folderImage.src=folderClosedImage;
+    if(!podcastActive && !photoActive && !resumeActive){
+      expand();
+    }
   },700);
 }
 
@@ -594,6 +867,7 @@ function expand(){
 function collapse(){
   if(!expanded) return;
   expanded=false;
+  closePodcastPlayer();
   folderImage.src=folderClosedImage;
   orbiters.forEach(el=>{
     el.style.opacity='0';
@@ -606,14 +880,23 @@ function collapse(){
 /* --- EVENTS --- */
 folder.addEventListener('click',e=>{
   e.stopPropagation();
-  if(resumeActive || awardActive) return;
+  if(resumeActive || awardActive || podcastActive) return;
   expanded?collapse():expand();
 });
 
 /* Close whichever modal is open by clicking overlay */
 overlay.addEventListener('click',()=>{
   if(resumeActive) closeResumePopup();
-  else if(awardActive) closeAwardPopup();
+});
+
+awardClose.addEventListener('click',e=>{
+  e.stopPropagation();
+  closeAwardPopup();
+});
+
+podcastClose.addEventListener('click',e=>{
+  e.stopPropagation();
+  closePodcastPlayer();
 });
 
 /* Resume Download button (resume only) */
@@ -630,31 +913,21 @@ resumeDownloadBtn.addEventListener('click',e=>{
      - elsewhere on overlay => X cursor
 */
 document.addEventListener('mousemove', e => {
-  if (!resumeActive && !awardActive) return;
+  if (!resumeActive || !resumeImagePopup.classList.contains('visible')) return;
 
   let insideImage = false;
   let insideDownload = false;
 
-  if (resumeActive && resumeImagePopup.classList.contains('visible')) {
-    const r = resumeImagePopup.getBoundingClientRect();
-    insideImage =
-      e.clientX >= r.left && e.clientX <= r.right &&
-      e.clientY >= r.top  && e.clientY <= r.bottom;
+  const r = resumeImagePopup.getBoundingClientRect();
+  insideImage =
+    e.clientX >= r.left && e.clientX <= r.right &&
+    e.clientY >= r.top  && e.clientY <= r.bottom;
 
-    if (resumeDownloadBtn.classList.contains('visible')) {
-      const b = resumeDownloadBtn.getBoundingClientRect();
-      insideDownload =
-        e.clientX >= b.left && e.clientX <= b.right &&
-        e.clientY >= b.top  && e.clientY <= b.bottom;
-    }
-  }
-
-  if (awardActive && awardImagePopup.classList.contains('visible')) {
-    const a = awardImagePopup.getBoundingClientRect();
-    const insideAward =
-      e.clientX >= a.left && e.clientX <= a.right &&
-      e.clientY >= a.top  && e.clientY <= a.bottom;
-    insideImage = insideImage || insideAward;
+  if (resumeDownloadBtn.classList.contains('visible')) {
+    const b = resumeDownloadBtn.getBoundingClientRect();
+    insideDownload =
+      e.clientX >= b.left && e.clientX <= b.right &&
+      e.clientY >= b.top  && e.clientY <= b.bottom;
   }
 
   if (insideDownload) {
