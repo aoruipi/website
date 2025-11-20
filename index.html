@@ -139,11 +139,10 @@
     opacity:0;
     max-width:100vw;
     max-height:95vh;
-    object-fit:contain;
+    display:inline-block;
     z-index:100;
-    transition:opacity 0.4s ease, transform 0.4s ease;
+    transition:opacity 0.45s ease-in-out, transform 0.45s ease-in-out;
     pointer-events:none;
-    cursor:url('assets/cursor.png') 16 16, auto !important; /* normal cursor inside image */
   }
   #resumeImagePopup.visible {
     opacity:1;
@@ -151,10 +150,29 @@
     pointer-events:auto;
   }
   #resumeImagePopup.fly-away {
-    top:-30%;
     opacity:0;
-    transform:translate(-50%,-50%) scale(0.4);
+    transform:translate(-50%,-48%) scale(0.9);
     pointer-events:none;
+  }
+  #resumeImagePopup img{
+    max-width:100%;
+    max-height:95vh;
+    width:auto;
+    height:auto;
+    object-fit:contain;
+    display:block;
+    cursor:url('assets/cursor.png') 16 16, auto !important; /* normal cursor inside image */
+  }
+  #resumeClose{
+    top:-2vmin;
+    right:-2vmin;
+  }
+
+  @media (max-width:750px){
+    #resumeImagePopup{
+      --resume-mobile-margin:5vw;          /* side margin on small screens */
+      max-width:calc(100vw - (var(--resume-mobile-margin) * 2));
+    }
   }
 
 #resumeDownloadBtn {
@@ -175,7 +193,7 @@
   width:calc(12vmin * 3);
   height:auto;
   object-fit:contain;
-  filter:drop-shadow(0 0.6vmin 1.2vmin rgba(0,0,0,0.5));
+  filter:brightness(1.06) drop-shadow(0 0.6vmin 1.2vmin rgba(0,0,0,0.5));
   transition:transform 0.2s ease;
 }
 #resumeDownloadBtn:hover {
@@ -198,7 +216,7 @@
     max-width:95vw;
     max-height:90vh;
     z-index:100;
-    transition:opacity 0.4s ease, transform 0.4s ease;
+    transition:opacity 0.45s ease-in-out, transform 0.45s ease-in-out;
     pointer-events:none;
     display:flex;
     align-items:center;
@@ -247,12 +265,23 @@
     pointer-events:auto;
   }
 
+  .photo-frame{
+    position:relative;
+    display:inline-flex;
+    justify-content:center;
+    align-items:center;
+    margin-bottom:5vmin;
+  }
   #photoImage {
     max-width:80vw;
     max-height:75vh;
     object-fit:contain;
-    margin-bottom:5vmin;
     transition:opacity 0.3s ease;
+    display:block;
+  }
+  #photoClose{
+    top:-2vmin;
+    right:-2.5vmin;
   }
 
   #photoControls {
@@ -302,10 +331,13 @@
 
   .podcast-player{
     position:fixed;
-    top:50%;
+    top:58%;
     left:50%;
     transform:translate(-50%,-50%) scale(0.95);
     width:min(85vw,680px);
+    --badge-scale:0.5;                  /* Controls badge width relative to player width */
+    --badge-top:-40%;                    /* Badge offset from player box (Y) */
+    --badge-left:-4.5%;                     /* Badge offset from player box (X) */
     background:rgba(0,60,0,0.88);
     border-radius:18px;
     border:1px solid rgba(255,255,255,0.08);
@@ -316,8 +348,6 @@
     pointer-events:none;
     z-index:120;
     overflow:visible;                    /* allow badge to float above window */
-    scrollbar-width:none;                /* hide firefox scrollbar when focusable */
-    -ms-overflow-style:none;             /* hide legacy IE scrollbar */
     cursor:url('assets/cursor.png') 16 16, auto !important;
   }
 
@@ -329,15 +359,21 @@
 
   .podcast-player .player-badge{
     position:absolute;
-    top:-18vmin;
-    left:-3.5vmin;
+    top:var(--badge-top);
+    left:var(--badge-left);
     transform:translate(-50%,-50%);
-    width: 30vmin;
+    width:clamp(180px, calc(var(--badge-scale) * 100%), 260px);
+    overflow:visible;                    /* allow badge to float above window */
     height:auto;
     pointer-events:none;
     animation:float 3s ease-in-out infinite;
     filter:drop-shadow(0 1vmin 1.8vmin rgba(0,0,0,0.35));
     z-index:160;
+  }
+
+  .podcast-content{
+    max-height:unset;
+    overflow:hidden;                    /* hide scrollbars on larger screens */
   }
 
   .window-close-btn{
@@ -363,8 +399,8 @@
   }
 
   #podcastClose{
-    top:1.2vmin;
-    right:1.2vmin;
+    top:1.1vmin;
+    right:0.8vmin;
   }
 
   #awardClose{
@@ -378,11 +414,27 @@
     border:0;
     border-radius:12px;
     scrollbar-width:none;
+    overflow:hidden;
   }
 
   .podcast-player::-webkit-scrollbar,
   #podcastPlayer iframe::-webkit-scrollbar{
     display:none;
+  }
+
+  /* Desktop: keep scrollbars hidden */
+  @media (min-width:751px){
+    .podcast-content{
+      max-height:unset;
+      overflow:hidden;
+    }
+    #podcastPlayer iframe{
+      overflow:hidden;
+      scrollbar-width:none;
+    }
+    #podcastPlayer iframe::-webkit-scrollbar{
+      display:none;
+    }
   }
 
   /* Grid view */
@@ -392,6 +444,9 @@
   }
 
   #photoViewer.grid #photoImage {
+    display:none;
+  }
+  #photoViewer.grid #photoClose{
     display:none;
   }
 
@@ -440,14 +495,20 @@
   transform:scale(1.05);
 }
 
-  @media (max-width:700px){
+  @media (max-width:750px){
     .podcast-player{
       width:90vw;
       padding:4vmin 4vmin 3vmin;
     }
 
-    .podcast-player .player-badge{
-      width:21vmin;
+    .podcast-content{
+      max-height:88vh;
+      overflow-y:auto;                   /* allow scrolling on small viewports */
+      overflow-x:visible;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:auto;
+      scrollbar-color:rgba(255,255,255,0.35) transparent;
+      -ms-overflow-style:auto;
     }
 
     #podcastClose{
@@ -457,7 +518,26 @@
 
     #podcastPlayer iframe{
       height:min(65vh,360px);
+      overflow:auto;
     }
+
+    .podcast-content::-webkit-scrollbar{
+      display:block !important;          /* override desktop hidden scrollbar */
+      width:8px;
+    }
+
+    .podcast-content::-webkit-scrollbar-thumb{
+      background:rgba(255,255,255,0.35);
+      border-radius:10px;
+    }
+
+    .podcast-content::-webkit-scrollbar-track{
+      background:rgba(255,255,255,0.08);
+    }
+
+    #podcastPlayer iframe::-webkit-scrollbar{ width:8px; }
+    #podcastPlayer iframe::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.35); border-radius:10px; }
+    #podcastPlayer iframe::-webkit-scrollbar-track{ background:rgba(255,255,255,0.08); }
   }
 </style>
 </head>
@@ -473,7 +553,10 @@
   <div id="overlay"></div>
 
   <!-- Resume popup -->
-  <img id="resumeImagePopup" src="assets/resumeimage.png" alt="Resume full image" />
+  <div id="resumeImagePopup">
+    <img id="resumeImage" src="assets/resumeimage.png" alt="Resume full image" />
+    <button id="resumeClose" class="window-close-btn" aria-label="Close resume image"></button>
+  </div>
 
   <!-- Award certificate popup -->
   <div id="awardImagePopup" role="dialog" aria-label="Award certificate">
@@ -492,12 +575,17 @@
   <div id="podcastPlayer" class="podcast-player" aria-hidden="true">
     <img class="player-badge" src="assets/podcast-player.png" alt="Podcast icon">
     <button id="podcastClose" class="window-close-btn" aria-label="Hide podcast player"></button>
-    <iframe allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" frameborder="0" height="450" scrolling="no" style="width:100%;max-width:660px;overflow:hidden;border-radius:10px;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" src="https://embed.podcasts.apple.com/us/podcast/peking-hotel-with-liu-he/id1748271770"></iframe>
+    <div class="podcast-content">
+      <iframe allow="autoplay *; encrypted-media *; fullscreen *; clipboard-write" frameborder="0" height="450" scrolling="auto" style="width:100%;max-width:660px;overflow:auto;border-radius:10px;" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" src="https://embed.podcasts.apple.com/us/podcast/peking-hotel-with-liu-he/id1748271770"></iframe>
+    </div>
   </div>
 
   <!-- Photography viewer popup -->
   <div id="photoViewer">
-    <img id="photoImage" src="" alt="Photo viewer">
+    <div class="photo-frame">
+      <button id="photoClose" class="window-close-btn" aria-label="Close photo viewer"></button>
+      <img id="photoImage" src="" alt="Photo viewer">
+    </div>
     <div id="photoControls">
       <button id="photoPrev"><img src="assets/left-index.png" alt="Previous"></button>
       <button id="photoGrid"><img src="assets/gallery.png" alt="Gallery"></button>
@@ -523,6 +611,7 @@ const orbit=document.getElementById('orbit');
 const overlay=document.getElementById('overlay');
 
 const resumeImagePopup=document.getElementById('resumeImagePopup');
+const resumeClose=document.getElementById('resumeClose');
 const resumeDownloadBtn=document.getElementById('resumeDownloadBtn');
 
 const awardImagePopup=document.getElementById('awardImagePopup');
@@ -544,6 +633,7 @@ let galleryMode=false;
 let gridContainer=null;
 let photoLoadId=0;
 let lastPointer=null;
+const podcastIframe=document.querySelector('#podcastPlayer iframe');
 
 const folderClosedImage='assets/folder.png';
 const folderOpenImage='assets/folder-open.png';
@@ -657,6 +747,7 @@ const photoPrev=document.getElementById('photoPrev');
 const photoNext=document.getElementById('photoNext');
 const photoGrid=document.getElementById('photoGrid');
 const photoControls=document.getElementById('photoControls');
+const photoClose=document.getElementById('photoClose');
 
 function triggerPhotoMode(){
   photoActive=true;
@@ -801,6 +892,11 @@ photoGrid.addEventListener('click',e=>{
   }
 });
 
+photoClose.addEventListener('click',e=>{
+  e.stopPropagation();
+  closePhotoViewer();
+});
+
 /* Close viewer when clicking outside */
 photoViewer.addEventListener('click', e => {
   const insideControls=photoControls && photoControls.contains(e.target);
@@ -819,38 +915,48 @@ photoViewer.addEventListener('click', e => {
 function closeResumePopup(){
   if(!resumeActive) return;
   resumeActive=false;
-  resumeImagePopup.classList.remove('visible');
   resumeDownloadBtn.classList.remove('visible');
   overlay.classList.remove('visible');
   document.body.style.cursor = CURSOR_DEFAULT;
+  playFlyAway(resumeImagePopup);
   applyModalCursor();
-  resumeImagePopup.classList.add('fly-away');
   setTimeout(()=>{
-    resumeImagePopup.classList.remove('fly-away');
     expanded=false;            // ensure one-click restart
     folderImage.src=folderClosedImage;
     if(!podcastActive && !photoActive && !awardActive){
       expand();
     }
-  },700);
+  },520);
 }
 
 function closeAwardPopup(){
   if(!awardActive) return;
   awardActive=false;
-  awardImagePopup.classList.remove('visible');
   overlay.classList.remove('visible');
   document.body.style.cursor = CURSOR_DEFAULT;
+  playFlyAway(awardImagePopup);
   applyModalCursor();
-  awardImagePopup.classList.add('fly-away');
   setTimeout(()=>{
-    awardImagePopup.classList.remove('fly-away');
     expanded=false;            // ensure one-click restart
     folderImage.src=folderClosedImage;
     if(!podcastActive && !photoActive && !resumeActive){
       expand();
     }
-  },700);
+  },520);
+}
+
+function playFlyAway(el){
+  if(!el) return;
+  let handler=null;
+  const cleanup=(e)=>{
+    if(e && e.target!==el) return;
+    el.classList.remove('fly-away','visible');
+    if(handler) el.removeEventListener('transitionend',handler);
+  };
+  handler=cleanup;
+  el.classList.add('fly-away');
+  el.addEventListener('transitionend',handler,{once:true});
+  setTimeout(cleanup,520);
 }
 
 function updateAwardImageSize(){
@@ -954,6 +1060,11 @@ resumeDownloadBtn.addEventListener('click',e=>{
   if(newTab){ newTab.opener=null; }
 });
 
+resumeClose.addEventListener('click',e=>{
+  e.stopPropagation();
+  closeResumePopup();
+});
+
 /* Cursor logic across resume, award, podcast, and photo overlays */
 function isPointerInside(el,x,y){
   if(!el) return false;
@@ -1012,10 +1123,25 @@ document.addEventListener('mousemove',handlePointerMove);
 function handleResize(){
   updateSizes();
   updateAwardImageSize();
+  updatePodcastScrollbar();
 }
 
 window.addEventListener('resize',handleResize);
 handleResize();
+
+function updatePodcastScrollbar(){
+  if(!podcastIframe) return;
+  const isMobile=window.innerWidth<=750;
+  const content=document.querySelector('.podcast-content');
+  podcastIframe.setAttribute('scrolling', isMobile ? 'auto' : 'no');
+  podcastIframe.style.overflow=isMobile ? 'auto' : 'hidden';
+  podcastIframe.style.webkitOverflowScrolling=isMobile ? 'touch' : 'auto';
+  if(content){
+    content.style.maxHeight=isMobile ? '88vh' : 'unset';
+    content.style.overflowY=isMobile ? 'auto' : 'hidden';
+    content.style.overflowX='visible';
+  }
+}
 </script>
 </body>
 </html>
