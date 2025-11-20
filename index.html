@@ -156,7 +156,8 @@
   }
   #resumeImagePopup img{
     max-width:100%;
-    max-height:95vh;
+    max-height:92vh;
+    min-width:480px;
     width:auto;
     height:auto;
     object-fit:contain;
@@ -170,8 +171,8 @@
 
   @media (max-width:750px){
     #resumeImagePopup{
-      --resume-mobile-margin:5vw;          /* side margin on small screens */
-      max-width:calc(100vw - (var(--resume-mobile-margin) * 2));
+      --resume-mobile-margin:0.1vw;          /* side margin on small screens */
+      max-width:calc(200vw - (var(--resume-mobile-margin) * 2));
     }
   }
 
