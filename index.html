@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Interactive Portfolio — Orbit Animation</title>
+<title>Aorui Pi's Portfolio</title>
 <style>
   html,body{
     height:100%;
     margin:0;
     font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
     /* Force cursor everywhere, even beyond content bounds */
-    cursor:url('assets/cursor.png') 16 16, auto !important;
+    cursor:url('assets/cursor.png') 11 8, auto !important;
   }
 
   body{
@@ -112,7 +112,7 @@
   .folder-btn *,
   .orbiter,
   .orbiter * {
-    cursor:url('assets/handcursor.png') 16 16, pointer !important;
+    cursor:url('assets/handcursor.png') 16 4, pointer !important;
   }
 
   /* --- Shared overlay for popups --- */
@@ -162,19 +162,22 @@
     height:auto;
     object-fit:contain;
     display:block;
-    cursor:url('assets/cursor.png') 16 16, auto !important; /* normal cursor inside image */
+    cursor:url('assets/cursor.png') 11 8, auto !important; /* normal cursor inside image */
   }
   #resumeClose{
     top:-2vmin;
     right:-2vmin;
   }
 
-  @media (max-width:750px){
-    #resumeImagePopup{
-      --resume-mobile-margin:0.1vw;          /* side margin on small screens */
-      max-width:calc(200vw - (var(--resume-mobile-margin) * 2));
-    }
+@media (max-width: 750px) {
+  #resumeImagePopup {
+    max-width: min(92vw, 700px);  /* perfect margin on all phones */
+    max-height: 90vh;      /* avoids cropping on tall images */
+    transform: translate(-50%, -50%) scale(1); /* keep centered */
+    left: 50%;
+    top: 50%;
   }
+}
 
 #resumeDownloadBtn {
   position:fixed;
@@ -204,7 +207,7 @@
   opacity:1;
   transform:translateX(-50%) scale(1);
   pointer-events:auto; /* Reactivate clicks only when visible */
-  cursor:url('assets/handcursor.png') 16 16, pointer !important;
+  cursor:url('assets/handcursor.png') 16 4, pointer !important;
 }
 
   /* --- Award Certificate Popup (no download button) --- */
@@ -222,7 +225,7 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    cursor:url('assets/cursor.png') 16 16, auto !important; /* normal cursor inside image */
+    cursor:url('assets/cursor.png') 11 8, auto !important; /* normal cursor inside image */
   }
   #awardImagePopup.visible {
     opacity:1;
@@ -305,7 +308,7 @@
   }
 
   #photoViewer.visible #photoControls button{
-    cursor:url('assets/handcursor.png') 16 16, pointer !important;
+    cursor:url('assets/handcursor.png') 16 4, pointer !important;
   }
 
   #photoControls img {
@@ -322,7 +325,7 @@
   }
 
   #photoControls button:disabled{
-    cursor:url('assets/cursor.png') 16 16, auto !important;
+    cursor:url('assets/cursor.png') 11 8, auto !important;
   }
 
   #photoControls button:disabled img{
@@ -349,7 +352,7 @@
     pointer-events:none;
     z-index:120;
     overflow:visible;                    /* allow badge to float above window */
-    cursor:url('assets/cursor.png') 16 16, auto !important;
+    cursor:url('assets/cursor.png') 11 8, auto !important;
   }
 
   .podcast-player.visible{
@@ -383,7 +386,7 @@
     height:4.4vmin;
     background:transparent url('assets/window-close.png') center/contain no-repeat;
     border:none;
-    cursor:url('assets/x-cursor.png') 16 16, pointer !important;
+    cursor:url('assets/x-cursor.png') 20 20, pointer !important;
     transition:transform 0.2s ease;
     z-index:200;
     padding:0;
@@ -489,7 +492,7 @@
   object-fit:cover;
   border-radius:6px;
   transition:transform 0.2s ease;
-  cursor:url('assets/handcursor.png') 16 16, pointer !important;
+  cursor:url('assets/handcursor.png') 16 4, pointer !important;
 }
 
 .grid-container img:hover {
