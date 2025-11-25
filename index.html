@@ -171,11 +171,22 @@
 
 @media (max-width: 750px) {
   #resumeImagePopup {
-    max-width: min(85vw);  /* perfect margin on all phones */
-    max-height: 78vh;      /* avoids cropping on tall images */
-    transform: translate(-50%, -50%) scale(1); /* keep centered */
+    width: auto !important;
+    height: auto !important;
+
+    max-width: 92vw !important;   /* prevents horizontal overflow */
+    max-height: 88vh !important;  /* prevents vertical overflow */
+
+    object-fit: contain !important;
+
+    padding: 0 !important;        /* KEY FIX: removes invisible clipping */
+    margin: 0 !important;
+
+    overflow: visible !important; /* prevents right-side cropping */
+
     left: 50%;
     top: 50%;
+    transform: translate(-50%, -50%);
   }
 }
 
