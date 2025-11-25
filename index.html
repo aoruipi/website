@@ -146,12 +146,12 @@
   }
   #resumeImagePopup.visible {
     opacity:1;
-    transform:translate(-50%,-50%) scale(1);
+    transform:translate(-50%,-50%) scale(1) !important;
     pointer-events:auto;
   }
   #resumeImagePopup.fly-away {
     opacity:0;
-    transform:translate(-50%,-48%) scale(0.9);
+    transform:translate(-50%,-50%) scale(1) !important;
     pointer-events:none;
   }
   #resumeImagePopup img{
@@ -171,22 +171,12 @@
 
 @media (max-width: 750px) {
   #resumeImagePopup {
+    max-width: 92vw !important;
+    max-height: 88vh !important;
     width: auto !important;
     height: auto !important;
-
-    max-width: 92vw !important;   /* prevents horizontal overflow */
-    max-height: 88vh !important;  /* prevents vertical overflow */
-
     object-fit: contain !important;
-
-    padding: 0 !important;        /* KEY FIX: removes invisible clipping */
-    margin: 0 !important;
-
-    overflow: visible !important; /* prevents right-side cropping */
-
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%) scale(1) !important;
   }
 }
 
