@@ -156,9 +156,8 @@
   }
   #resumeImagePopup img{
     max-width:100%;
-    max-height:92vh;
-    min-width:480px;
-    width:auto;
+    max-height:88vh;
+    width:min(92vw,820px);
     height:auto;
     object-fit:contain;
     display:block;
@@ -171,12 +170,16 @@
 
 @media (max-width: 750px) {
   #resumeImagePopup {
-    max-width: 92vw !important;
-    max-height: 88vh !important;
+    max-width: 90vw !important;
+    max-height: 82vh !important;
     width: auto !important;
     height: auto !important;
     object-fit: contain !important;
     transform: translate(-50%, -50%) scale(1) !important;
+  }
+  #resumeImagePopup img{
+    width:86vw;
+    max-height:76vh;
   }
 }
 
